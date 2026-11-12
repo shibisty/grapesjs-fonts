@@ -1,0 +1,55 @@
+{
+  "name": "grapesjs-fonts",
+  "version": "0.1.0",
+  "description": "GrapesJS plugin: browse free web fonts from several CDNs (Google Fonts, Bunny Fonts, Fontsource, Fontshare) with search, filters, sorting and pagination, and apply them to text.",
+  "type": "module",
+  "main": "./dist/grapesjs-fonts.umd.cjs",
+  "module": "./dist/grapesjs-fonts.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/grapesjs-fonts.umd.cjs",
+  "jsdelivr": "./dist/grapesjs-fonts.umd.cjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/grapesjs-fonts.js",
+      "require": "./dist/grapesjs-fonts.umd.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "proxy",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "node e2e/flows.mjs"
+  },
+  "keywords": [
+    "grapesjs",
+    "grapesjs-plugin",
+    "fonts",
+    "google-fonts",
+    "bunny-fonts",
+    "fontsource",
+    "fontshare",
+    "typography"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "grapesjs": ">=0.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "grapesjs": "^0.21.13",
+    "jsdom": "^25.0.1",
+    "playwright-core": "^1.65.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
+  }
+}

@@ -1,0 +1,13 @@
+import { launch, log } from './run.mjs';
+const locale = process.argv[2] || 'en';
+const { browser, page } = await launch({ locale });
+await page.evaluate(() => editor.select(editor.getWrapper().find('#t1')[0]));
+await page.evaluate(() => editor.runCommand('fonts:open'));
+await page.waitForSelector('.gjs-fonts-card');
+await page.waitForTimeout(800);
+await page.click('.gjs-fonts-card:nth-child(2)');
+await page.waitForTimeout(300);
+await page.screenshot({ path: `e2e/shot-${locale}.png` });
+console.log(await page.textContent('.gjs-fonts-footer__info'), await page.$eval('.gjs-fonts-filters select', s => s.value));
+console.log(log);
+await browser.close();

@@ -1,0 +1,16 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="/gjs/css/grapes.min.css">
+<style>body,html{margin:0;height:100%}#gjs{height:100%}</style>
+<script src="/gjs/grapes.min.js"></script>
+<script src="/dist/grapesjs-fonts.umd.cjs"></script>
+</head><body><div id="gjs"></div>
+<script>
+  window.editor = grapesjs.init({
+    container: '#gjs', height: '100%', storageManager: false,
+    i18n: { locale: window.__LOCALE || 'en', detectLocale: false },
+    components: '<h1 id="t1">Hello world</h1><p id="p1">Some <b>bold</b> paragraph text here</p>',
+    plugins: [grapesjsFonts.default],
+    pluginsOpts: { [grapesjsFonts.default]: window.__FONTS_OPTS || {} },
+  });
+</script></body></html>
