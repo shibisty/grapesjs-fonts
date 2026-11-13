@@ -1,6 +1,6 @@
 {
   "name": "grapesjs-fonts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "GrapesJS plugin: browse free web fonts from several CDNs (Google Fonts, Bunny Fonts, Fontsource, Fontshare) with search, filters, sorting and pagination, and apply them to text.",
   "type": "module",
   "main": "./dist/grapesjs-fonts.umd.cjs",

@@ -4,7 +4,7 @@ import { Catalog } from './core/catalog';
 import type { HttpContext } from './core/http';
 import { EVENTS, FontsManager, type ApplyTarget } from './core/manager';
 import { createTranslator, registerI18n } from './i18n';
-import { setupRte } from './integration/rte';
+import { applyFontToRange, setupRte } from './integration/rte';
 import { setupStyleManager } from './integration/styleManager';
 import { resolveOptions, type FontsPluginOptions } from './options';
 import { createBunnyProvider } from './providers/bunny';
@@ -22,7 +22,7 @@ export const COMMANDS = {
 
 export { EVENTS };
 export { PROPERTY_TYPE } from './integration/styleManager';
-export { RTE_ACTION, wrapRangeWithFont } from './integration/rte';
+export { RTE_ACTION, applyFontToRange, wrapRangeWithFont } from './integration/rte';
 export { locales, SUPPORTED_LOCALES } from './i18n';
 export * from './providers';
 export * from './types';
@@ -44,6 +44,16 @@ export interface FontsApi {
   remove(family: string): boolean;
   /** Apply a project font to a component / CSS rule (default: current Style Manager target). */
   apply(family: string, target?: ApplyTarget): boolean;
+  /**
+   * Apply a project font to a text range of the canvas (wraps it in a
+   * `<span style="font-family">` and updates the component). Returns false
+   * when the range is empty / gone or the font is not in the project.
+   */
+  applyToRange(family: string, range: Range): boolean;
+  /** Remove `font-family` from a target (default: current Style Manager target). */
+  clear(target?: ApplyTarget): boolean;
+  /** The project font a `font-family` value starts with. */
+  fromValue(value: string | null | undefined): ProjectFont | undefined;
   /** CSS value for a project font, e.g. `'Open Sans', sans-serif`. */
   valueOf(family: string): string;
   /** `@import` rules of the project fonts. */
@@ -184,6 +194,22 @@ const grapesjsFonts: Plugin<FontsPluginOptions> = (editor, rawOptions = {}) => {
     add: (font, variants) => manager.add(font, variants),
     remove: (family) => manager.remove(family),
     apply: (family, target) => manager.apply(family, target ?? manager.getTarget()),
+    applyToRange: (family, range) => {
+      const font = manager.project.get(family);
+      return !!font && applyFontToRange(editor, range, font, manager.valueOf(family));
+    },
+    clear: (target) => {
+      const tg: any = target ?? manager.getTarget();
+      if (!tg) return false;
+      if (typeof tg.removeStyle === 'function') tg.removeStyle('font-family');
+      else {
+        const style = { ...(tg.getStyle?.() || {}) };
+        delete style['font-family'];
+        tg.setStyle ? tg.setStyle(style) : tg.addStyle({ 'font-family': '' });
+      }
+      return true;
+    },
+    fromValue: (value) => manager.fromValue(value),
     valueOf: (family) => manager.valueOf(family),
     getImportCss: () => manager.getImportCss(),
     getLinksHtml: () => manager.getLinksHtml(),
@@ -194,7 +220,12 @@ const grapesjsFonts: Plugin<FontsPluginOptions> = (editor, rawOptions = {}) => {
     catalog,
   };
   instances.set(editor, api);
-  editor.on('destroy', () => instances.delete(editor));
+  // Reachable without importing this package (grapesjs-context-menu, UMD pages).
+  (editor as any).Fonts = api;
+  editor.on('destroy', () => {
+    instances.delete(editor);
+    if ((editor as any).Fonts === api) delete (editor as any).Fonts;
+  });
 };
 
 export default grapesjsFonts;

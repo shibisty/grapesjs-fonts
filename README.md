@@ -88,6 +88,10 @@ fonts.open({ family: 'Lora', onApply: (font, value) => {/* … */} });
 fonts.list();                                  // project fonts
 fonts.add({ family: 'Inter', provider: 'google', id: 'Inter', category: 'sans-serif', variants: ['400', '700'] });
 fonts.apply('Inter');                          // to the current Style Manager target
+fonts.apply('Inter', component);               // or to a component / CSS rule
+fonts.applyToRange('Inter', range);            // to a text Range of the canvas (wrapped in a <span>)
+fonts.clear(component);                        // remove font-family
+fonts.fromValue("'Inter', sans-serif");       // the project font of a CSS value
 fonts.remove('Inter');
 fonts.getLinksHtml();                          // <link rel="stylesheet" …> for your page <head>
 fonts.getImportCss();                          // @import url(…);
@@ -95,6 +99,8 @@ fonts.getCssUrls();
 await fonts.loadCatalogs();                    // (force = true to bypass the cache)
 fonts.getCatalog(['fontshare']);
 ```
+
+The same API is also `editor.Fonts`, so other plugins can use it without importing this package — [grapesjs-context-menu](https://www.npmjs.com/package/grapesjs-context-menu) 1.1+ shows a **Font** submenu with the project fonts this way (selected text in the canvas or the whole element).
 
 Command: `fonts:open` (`editor.runCommand('fonts:open', { family })`).
 Events: `fonts:change`, `fonts:add`, `fonts:remove`, `fonts:apply`, `fonts:catalog`.
