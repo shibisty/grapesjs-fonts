@@ -1,3 +1,4 @@
+import type { PluginMeta } from './contract';
 import type { FetchLike } from './core/http';
 import type { CatalogQuery } from './core/query';
 import type { FontsMessages } from './i18n';
@@ -31,6 +32,8 @@ export interface FontsPluginOptions {
   cacheTtl?: number;
   /** localStorage key prefix for catalogue cache and UI state. `false` disables persistence. @default 'gjs-fonts:' */
   storagePrefix?: string | false;
+  /** Same as `storagePrefix` (common name of this plugin family). */
+  storageKey?: string | false;
   /** Request timeout, ms. @default 20000 */
   timeout?: number;
   /** Custom fetch (tests, auth headers…). */
@@ -71,7 +74,7 @@ export interface FontsPluginOptions {
   labels?: Partial<FontsMessages>;
 }
 
-export type ResolvedOptions = Required<Omit<FontsPluginOptions, 'google' | 'bunny' | 'fontsource' | 'fontshare' | 'fetch' | 'defaultQuery' | 'labels'>> &
+export type ResolvedOptions = Required<Omit<FontsPluginOptions, 'google' | 'bunny' | 'fontsource' | 'fontshare' | 'fetch' | 'defaultQuery' | 'labels' | 'storageKey'>> &
   Pick<FontsPluginOptions, 'google' | 'bunny' | 'fontsource' | 'fontshare' | 'fetch'> & {
     defaultQuery: Partial<CatalogQuery>;
     labels: Partial<FontsMessages>;
@@ -98,6 +101,81 @@ export const DEFAULT_OPTIONS: ResolvedOptions = {
 
 export function resolveOptions(opts: FontsPluginOptions = {}): ResolvedOptions {
   const out = { ...DEFAULT_OPTIONS } as ResolvedOptions;
-  for (const [k, v] of Object.entries(opts)) if (v !== undefined) (out as any)[k] = v;
+  for (const [k, v] of Object.entries(opts)) if (v !== undefined && k !== 'storageKey') (out as any)[k] = v;
+  if (opts.storageKey !== undefined && opts.storagePrefix === undefined) out.storagePrefix = opts.storageKey;
+  out.labels = { ...(out.labels || {}) };
   return out;
+}
+
+export const PLUGIN_ID = 'grapesjs-fonts';
+/** Version of this package (a test checks it against package.json). */
+export const VERSION = '0.3.0';
+
+const providerChoices = ['google', 'fontshare', 'fontsource', 'bunny'];
+
+/** Options for forms (plugin contract). Texts, proxy and timeout apply live. */
+export const META: PluginMeta = {
+  id: PLUGIN_ID,
+  version: VERSION,
+  title: 'Fonts',
+  description: 'Fonts from Google Fonts, Fontshare, Fontsource and Bunny Fonts for the project.',
+  options: [
+    { key: 'providers', type: 'list', default: providerChoices, title: 'Sources', description: `In priority order: ${providerChoices.join(', ')}.` },
+    {
+      key: 'proxy',
+      type: 'string',
+      default: DEFAULT_OPTIONS.proxy,
+      title: 'Catalogue proxy',
+      description: 'CORS proxy for catalogue APIs, e.g. /plugins/grapesjs-fonts/proxy/fonts-proxy.php. Empty — none (Google only).',
+      live: true,
+    },
+    { key: 'google', type: 'json', default: {}, title: 'Google Fonts', description: '{ "apiKey": "…" } — Developer API with popularity order.', advanced: true },
+    {
+      key: 'styleManager',
+      type: 'select',
+      default: true,
+      title: 'Style Manager',
+      choices: [
+        { value: true, label: 'Replace font-family' },
+        { value: 'options', label: 'Add to the list' },
+        { value: false, label: 'No' },
+      ],
+    },
+    { key: 'rte', type: 'boolean', default: true, title: '"Aa" in the text toolbar' },
+    { key: 'button', type: 'json', default: { panel: 'options' }, title: 'Toolbar button', description: '{ "panel": "options", "id": "fonts" }, or false.' },
+    { key: 'pageSize', type: 'number', default: DEFAULT_OPTIONS.pageSize, title: 'Fonts per page' },
+    { key: 'autoSubset', type: 'boolean', default: true, title: 'Filter by the editor language', description: 'uk/ru → cyrillic, el → greek, …' },
+    { key: 'display', type: 'select', default: 'swap', title: 'font-display', choices: ['auto', 'block', 'swap', 'fallback', 'optional'].map((value) => ({ value })) },
+    { key: 'canvasLinks', type: 'boolean', default: true, title: 'Load fonts into the canvas' },
+    { key: 'exportImport', type: 'boolean', default: true, title: '@import in getCss()' },
+    { key: 'timeout', type: 'number', default: DEFAULT_OPTIONS.timeout, title: 'Request timeout, ms', live: true, advanced: true },
+    { key: 'cacheTtl', type: 'number', default: DEFAULT_OPTIONS.cacheTtl, title: 'Catalogue cache, ms', advanced: true },
+    { key: 'storageKey', type: 'string', default: DEFAULT_OPTIONS.storagePrefix, title: 'localStorage prefix', aliases: ['storagePrefix'], advanced: true },
+    { key: 'pageSizes', type: 'json', default: DEFAULT_OPTIONS.pageSizes, title: 'Page sizes', advanced: true },
+    { key: 'defaultQuery', type: 'json', default: {}, title: 'Initial filters', description: 'e.g. { "sort": "name", "categories": ["serif"] }', advanced: true },
+    { key: 'labels', type: 'json', default: {}, title: 'Texts', description: 'Overrides of UI texts.', live: true, advanced: true },
+  ],
+};
+
+/** The options a form can show (no functions or provider objects). */
+export function publicOptions(o: ResolvedOptions): Record<string, unknown> {
+  return {
+    providers: o.providers.map((p) => (typeof p === 'string' ? p : (p as { id?: string }).id || 'custom')),
+    proxy: o.proxy === false ? '' : o.proxy,
+    google: { ...((o as unknown as { google?: object }).google || {}) },
+    styleManager: o.styleManager,
+    rte: o.rte,
+    button: o.button,
+    pageSize: o.pageSize,
+    autoSubset: o.autoSubset,
+    display: o.display,
+    canvasLinks: o.canvasLinks,
+    exportImport: o.exportImport,
+    timeout: o.timeout,
+    cacheTtl: o.cacheTtl,
+    storageKey: o.storagePrefix,
+    pageSizes: o.pageSizes,
+    defaultQuery: o.defaultQuery,
+    labels: { ...o.labels },
+  };
 }

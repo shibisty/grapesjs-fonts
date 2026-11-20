@@ -6,7 +6,8 @@ import { EVENTS, FontsManager, type ApplyTarget } from './core/manager';
 import { createTranslator, registerI18n } from './i18n';
 import { applyFontToRange, setupRte } from './integration/rte';
 import { setupStyleManager } from './integration/styleManager';
-import { resolveOptions, type FontsPluginOptions } from './options';
+import { META, VERSION, publicOptions, resolveOptions, type FontsPluginOptions } from './options';
+import { assignOptions, definePlugin, registerControl } from './contract';
 import { createBunnyProvider } from './providers/bunny';
 import { createFontshareProvider } from './providers/fontshare';
 import { createFontsourceProvider } from './providers/fontsource';
@@ -104,6 +105,12 @@ const grapesjsFonts: Plugin<FontsPluginOptions> = (editor, rawOptions = {}) => {
     proxy: opts.proxy,
     timeout: opts.timeout,
   };
+  const offControl = registerControl(editor, META, () => publicOptions(opts), (patch) => {
+    if ('proxy' in patch) patch.proxy = patch.proxy === '' || patch.proxy == null ? false : patch.proxy;
+    assignOptions(opts as unknown as Record<string, unknown>, patch);
+    http.proxy = opts.proxy;
+    http.timeout = opts.timeout;
+  });
   const catalog = new Catalog({
     providers: buildProviders(opts),
     http,
@@ -223,10 +230,14 @@ const grapesjsFonts: Plugin<FontsPluginOptions> = (editor, rawOptions = {}) => {
   // Reachable without importing this package (grapesjs-context-menu, UMD pages).
   (editor as any).Fonts = api;
   editor.on('destroy', () => {
+    offControl();
     instances.delete(editor);
     if ((editor as any).Fonts === api) delete (editor as any).Fonts;
   });
 };
 
+definePlugin(grapesjsFonts, META);
+
+export { META, VERSION };
 export default grapesjsFonts;
 export { grapesjsFonts };

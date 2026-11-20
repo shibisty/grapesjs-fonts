@@ -140,6 +140,20 @@ npm run build
 npm run e2e       # real GrapesJS in headless Chrome, network mocked (CHROME_PATH to override Chrome)
 ```
 
+
+## Using it by name and changing options in the editor
+
+This plugin follows the plugin contract of grapesjs-plugins-manager (its `docs/plugin-contract.md`): with the UMD bundle on the page it registers itself as `grapesjs-fonts`, so it can be listed like an official plugin —
+
+```js
+grapesjs.init({
+  plugins: ['grapesjs-fonts'],
+  pluginsOpts: { 'grapesjs-fonts': { /* options */ } },
+});
+```
+
+— and grapesjs-plugins-manager shows a form of its options (⚙ in the plugin list). The plugin function carries `meta` (id, version, option schema).
+
 ## License
 
 MIT. Font licences are those of the fonts (all four sources serve open-licensed fonts); the plugin only links to them.
