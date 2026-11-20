@@ -1,13 +1,13 @@
 {
   "name": "grapesjs-fonts",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "GrapesJS plugin: browse free web fonts from several CDNs (Google Fonts, Bunny Fonts, Fontsource, Fontshare) with search, filters, sorting and pagination, and apply them to text.",
   "type": "module",
   "main": "./dist/grapesjs-fonts.umd.cjs",
   "module": "./dist/grapesjs-fonts.js",
   "types": "./dist/index.d.ts",
-  "unpkg": "./dist/grapesjs-fonts.umd.cjs",
-  "jsdelivr": "./dist/grapesjs-fonts.umd.cjs",
+  "unpkg": "./dist/grapesjs-fonts.umd.js",
+  "jsdelivr": "./dist/grapesjs-fonts.umd.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -23,7 +23,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && tsc -p tsconfig.build.json",
+    "build": "vite build && tsc -p tsconfig.build.json && node -e \"require('fs').copyFileSync('dist/grapesjs-fonts.umd.cjs','dist/grapesjs-fonts.umd.js')\"",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
     "test:watch": "vitest",

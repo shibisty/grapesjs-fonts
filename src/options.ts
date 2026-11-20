@@ -109,7 +109,7 @@ export function resolveOptions(opts: FontsPluginOptions = {}): ResolvedOptions {
 
 export const PLUGIN_ID = 'grapesjs-fonts';
 /** Version of this package (a test checks it against package.json). */
-export const VERSION = '0.3.0';
+export const VERSION = '0.3.1';
 
 const providerChoices = ['google', 'fontshare', 'fontsource', 'bunny'];
 
